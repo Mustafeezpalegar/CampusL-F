@@ -23,13 +23,7 @@ async function updateProfileProvider(req, res) {
     if (lastname)  updatePayload.lastname  = lastname;
     if (phone !== undefined) updatePayload.phone = phone;
 
-    // Image upload — multer field name: "image" (upload.single("image"))
-    // Save only the relative path starting from "uploads/..."
-    if (req.file?.path) {
-      const fullPath  = req.file.path;
-      const imagepath = fullPath.substring(fullPath.indexOf("uploads"));
-      updatePayload.profileImage = imagepath;
-    }
+    if (req.file?.path) updatePayload.profileImage = req.file.path;
 
     if (Object.keys(updatePayload).length === 0) {
       return res.status(StatusCodes.BAD_REQUEST).json({

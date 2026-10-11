@@ -31,28 +31,34 @@ function configureApp(app) {
 
 
 
-// CORS Configuration with Multiple Origins and Regex Support
-const allowedOrigins = [
+const localOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
-  /\.app\.github\.dev$/,    // GitHub Codespaces
-  /\.devtunnels\.ms$/,      // VS Code Dev Tunnels ← add this
+];
+const configuredOrigins = (process.env.CLIENT_ORIGINS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([...localOrigins, ...configuredOrigins]);
+const hostedDevelopmentOriginPatterns = [
+  /^https?:\/\/[^/]+\.app\.github\.dev$/,
+  /^https?:\/\/[^/]+\.devtunnels\.ms$/,
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
 
-    const isAllowed = allowedOrigins.some(o =>
-      o instanceof RegExp ? o.test(origin) : o === origin
-    );
+    const isAllowed = allowedOrigins.has(origin) ||
+      hostedDevelopmentOriginPatterns.some((pattern) => pattern.test(origin));
 
     if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked: ${origin}`));
+      const error = new Error(`CORS blocked: ${origin}`);
+      error.status = 403;
+      callback(error);
     }
   },
   credentials: true,
@@ -80,6 +86,7 @@ app.use(responseFormatter);
 app.use(expressWinstonLogger);
 
 //  Defining Routes
+app.get("/health", (req, res) => res.status(StatusCodes.OK).json({ status: "ok" }));
 app.use("/", authRouter);
 app.use("/users", usersRouter);
 app.use("/", itemRouter);
@@ -89,6 +96,14 @@ app.use("/", claimRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 console.log(swaggerSpecs);
+
+app.use((error, req, res, next) => {
+  console.error("Request failed:", error);
+  const statusCode = error.status || error.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+  res.status(statusCode).json({
+    message: statusCode >= 500 ? "The request could not be completed." : error.message,
+  });
+});
 
 // send back a 404 error for any unknown api request
 // Sequence is important

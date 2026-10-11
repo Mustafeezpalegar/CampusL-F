@@ -191,67 +191,54 @@ VITE_API_URL=http://localhost:3001/
 
 ## 📁 Multer Upload Path
 
-Images uploaded by users are saved to the frontend's `public/uploads/` folder so they can be served statically.
+User-uploaded item and profile photos are stored in Cloudinary. Configure
+`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` on the
+backend. Uploads accept JPEG, PNG, and WebP images up to 5 MB.
 
-Open `backend/src/middleware/upload.middleware.js` and update the `destination` path to match your machine:
+## 🌐 Deploying the application
 
-```js
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // ⚠️ Change this path to match your local setup
-    cb(null, "D:/React/SmartcampusLostandFoundManagementsystem/frontend/public/uploads/")
-  },
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, unique + path.extname(file.originalname));
-  },
-});
-```
+The repository is configured to deploy the React frontend to Vercel and the Express
+API to Render. MongoDB Atlas stores application data and Cloudinary stores uploads.
 
-### How to find the correct path
+1. Create a MongoDB Atlas cluster and database user. Add Render's outbound access
+   to the Atlas network allowlist (for a public demo, Atlas allows `0.0.0.0/0`).
+   Copy the cluster connection string for `DATABASE_URL`.
+2. Create a Cloudinary account and note its cloud name, API key, and API secret.
+3. In Render, create a new Blueprint from this GitHub repository and apply
+   `render.yaml`. Set the requested environment values:
+   `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLIENT_ORIGINS`, and the three
+   Cloudinary credentials. Use a long, unique admin password.
+4. Once Render deploys, check `https://<your-render-service>.onrender.com/health`.
+   It should return `{"status":"ok"}`.
+5. In Vercel, import this GitHub repository. Keep the project root at the
+   repository root; `vercel.json` configures the frontend build and SPA routes.
+6. Set `VITE_API_URL` in Vercel's project environment variables to the API base
+   URL, including the final slash, for example
+   `https://<your-render-service>.onrender.com/`. Deploy or redeploy the frontend.
+7. In Render, set `CLIENT_ORIGINS` to the exact Vercel website origin, for example
+   `https://<your-project>.vercel.app` (no trailing slash). Add any custom domain
+   origin, comma-separated, if you use one. Save and redeploy the API.
 
-**Windows:**
-```
-Right-click the frontend/public/uploads folder → Properties → copy the Location
-Example: D:\React\SmartcampusLostandFoundManagementsystem\frontend\public\uploads\
-```
-
-**Mac/Linux:**
-```bash
-cd frontend/public/uploads && pwd
-# Example output: /Users/yourname/projects/campus-lf/frontend/public/uploads
-```
-
-> **Important:** Use forward slashes `/` even on Windows inside Node.js, or escape backslashes `\\`.
-
-```js
-// ✅ Windows — use forward slashes
-cb(null, "D:/React/SmartcampusLostandFoundManagementsystem/frontend/public/uploads/")
-
-// ✅ Mac/Linux
-cb(null, "/Users/yourname/projects/campus-lf/frontend/public/uploads/")
-```
-
-Also make sure the folder exists before running the server:
-
-```bash
-# Create the folder if it doesn't exist
-mkdir -p frontend/public/uploads
-```
+Do not commit `.env` files or put database, JWT, admin, or Cloudinary secrets in
+Vercel's `VITE_` variables; Vite exposes those variables to every browser user.
+The frontend's `VITE_API_URL` is public and should contain only the API URL.
 
 ---
 
 ## 👤 Default Admin Account
 
-When the backend starts for the first time, it automatically creates an admin account using the credentials from your `.env` file.
+When the backend starts for the first time, it automatically creates an admin
+account using `ADMIN_EMAIL` and `ADMIN_PASSWORD`. In development, the fallback
+credentials are `admin@campus.com` / `Abcd@123`; production requires explicit
+credentials and will not start without them.
 
 | Field | Default Value |
 |---|---|
-| Email | admin@campus.com |
-| Password | Admin@1234 |
+| Email | `ADMIN_EMAIL` environment variable |
+| Password | `ADMIN_PASSWORD` environment variable |
 | Role | admin |
 
-> **Change these in your `.env` before deploying to production.**
+> **Set a unique, strong admin password before deploying to production.**
 
 Login at `http://localhost:5173/login` with the admin credentials to access the admin dashboard at `/admin`.
 

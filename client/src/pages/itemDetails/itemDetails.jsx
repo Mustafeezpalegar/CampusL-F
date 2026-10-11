@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import Sidebar from "../../components/sidebar/sidebar.jsx";
 import { useGetItemById } from "../../hooks/itemsHook/useGetItemById.hook";
+import { resolveImageUrl } from "../../lib/utils.js";
 import {
   ArrowLeft, MapPin, Calendar, Tag, User,
   Shield, Flag, CheckCircle, Clock, XCircle,
@@ -159,7 +160,7 @@ const ItemDetail = () => {
                 <div className="lg:w-2/5 shrink-0">
                   {item.imageURL && !imgError ? (
                     <img
-                      src={item.imageURL?.replace(/\\/g, "/")}
+                      src={resolveImageUrl(item.imageURL)}
                       alt={item.title}
                       onError={() => setImgError(true)}
                       className="w-full h-64 lg:h-full object-cover"
@@ -237,7 +238,7 @@ const ItemDetail = () => {
                     <div className="mt-6 pt-5 border-t border-gray-100 flex items-center gap-3">
                       {item.postedBy.profileImage ? (
                         <img
-                          src={item.postedBy.profileImage}
+                          src={resolveImageUrl(item.postedBy.profileImage)}
                           alt={item.postedBy.firstname}
                           className="w-10 h-10 rounded-full object-cover"
                         />

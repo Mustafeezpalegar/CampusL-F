@@ -12,10 +12,7 @@ async function createItemProvider(req, res) {
   try {
     const { lat, lng, keywords,imageURL, ...rest } = validData;
 
-    const fullPath = req.file ? req.file.path : null;
-    const imagepath = fullPath
-      ? fullPath.substring(fullPath.indexOf("uploads"))
-      : null;
+    const imagepath = req.file?.path || null;
 
     // Build the item payload
     const payload = {

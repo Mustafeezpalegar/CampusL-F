@@ -3,6 +3,7 @@ import Sidebar from "../../components/sidebar/sidebar.jsx";
 import { useFetchItems } from "../../hooks/itemsHook/useGetItems.hook";
 import { useNavigate } from "react-router";
 import Navbar from "../../components/navbar/navbar.jsx";
+import { resolveImageUrl } from "../../lib/utils.js";
 
 // schema enum: "wallet" | "phone" | "bag" | "id" | "electronics" | "others"
 const CATEGORY_EMOJI = {
@@ -35,7 +36,7 @@ function ItemCard({ item, navigate }) {
       {/* Image or emoji placeholder */}
       {item.imageURL ? (
         <img
-          src={item.imageURL?.replace(/\\/g, "/")}
+          src={resolveImageUrl(item.imageURL)}
           alt={item.title}
           className="w-full h-40 object-cover rounded-xl"
         />

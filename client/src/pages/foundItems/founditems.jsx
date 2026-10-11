@@ -3,6 +3,7 @@ import Sidebar from "../../components/sidebar/sidebar.jsx";
 import { useGetMyItems } from "../../hooks/itemsHook/useGetMyItems.hook";
 import { useNavigate } from "react-router";
 import Navbar from "../../components/navbar/navbar.jsx";
+import { resolveImageUrl } from "../../lib/utils.js";
 
 const CATEGORY_EMOJI = {
   wallet: "👛", phone: "📱", bag: "🎒",
@@ -47,7 +48,7 @@ function ItemCard({ item, navigate }) {
       <div className="relative">
         {item.imageURL ? (
           <img
-            src={item.imageURL}
+            src={resolveImageUrl(item.imageURL)}
             alt={item.title}
             className="w-full h-40 object-cover"
           />
